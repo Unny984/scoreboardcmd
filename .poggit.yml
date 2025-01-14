@@ -1,6 +1,22 @@
---- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/Unny984/scoreboardcmd
+---
+# Poggit-CI Manifest
 build-by-default: true
 branches:
-- main
-projects: []
+  - main
+projects:
+  - path: .
+    name: ScoreboardCmd
+    project-type: plugin
+    version: 1.0.0
+    api:
+      - 5.0.0
+    php:
+      - ^8.0
+    dependencies: []
+    soft-dependencies: []
+    description: A PocketMine-MP plugin to control a scoreboard with a countdown timer via commands.
+    license: MIT
+    keywords: [scoreboard, countdown, timer, commands]
+    authors:
+      - Unny984
 ...
