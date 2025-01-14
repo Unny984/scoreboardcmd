@@ -6,12 +6,12 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use pocketmine\scheduler\Task;
+use pocketmine\scheduler\TaskHandler;
 use pocketmine\utils\TextFormat;
 
 class Main extends PluginBase {
 
-    private ?Task $countdownTask = null;
+    private ?TaskHandler $countdownTaskHandler = null;
 
     public function onEnable(): void {
         $this->getLogger()->info(TextFormat::GREEN . "ScoreboardCmd enabled!");
@@ -19,8 +19,8 @@ class Main extends PluginBase {
 
     public function onDisable(): void {
         $this->getLogger()->info(TextFormat::RED . "ScoreboardCmd disabled!");
-        if ($this->countdownTask !== null) {
-            $this->getScheduler()->cancelTask($this->countdownTask->getTaskId());
+        if ($this->countdownTaskHandler !== null) {
+            $this->countdownTaskHandler->cancel();
         }
     }
 
@@ -55,14 +55,14 @@ class Main extends PluginBase {
     }
 
     private function startCountdown(Player $player, int $time): void {
-        if ($this->countdownTask !== null) {
+        if ($this->countdownTaskHandler !== null) {
             $player->sendMessage(TextFormat::RED . "A countdown is already running.");
             return;
         }
 
         $player->sendMessage(TextFormat::GREEN . "Countdown started for {$time} seconds.");
 
-        $this->countdownTask = new class($player, $time, $this) extends Task {
+        $task = new class($player, $time, $this) extends \pocketmine\scheduler\Task {
             private Player $player;
             private int $remainingTime;
             private Main $plugin;
@@ -75,7 +75,7 @@ class Main extends PluginBase {
 
             public function onRun(): void {
                 if ($this->remainingTime <= 0) {
-                    $this->plugin->getScheduler()->cancelTask($this->getTaskId());
+                    $this->plugin->getScheduler()->cancelTask($this);
                     $this->plugin->removeScoreboard($this->player);
                     $this->player->sendMessage(TextFormat::GREEN . "Countdown finished!");
                     return;
@@ -90,26 +90,26 @@ class Main extends PluginBase {
             }
         };
 
-        $this->getScheduler()->scheduleRepeatingTask($this->countdownTask, 20); // Runs every second
+        $this->countdownTaskHandler = $this->getScheduler()->scheduleRepeatingTask($task, 20); // Runs every second
     }
 
     private function stopCountdown(Player $player): void {
-        if ($this->countdownTask === null) {
+        if ($this->countdownTaskHandler === null) {
             $player->sendMessage(TextFormat::RED . "No countdown is currently running.");
             return;
         }
 
-        $this->getScheduler()->cancelTask($this->countdownTask->getTaskId());
-        $this->countdownTask = null;
+        $this->countdownTaskHandler->cancel();
+        $this->countdownTaskHandler = null;
         $this->removeScoreboard($player);
         $player->sendMessage(TextFormat::GREEN . "Countdown stopped.");
     }
 
-    private function updateScoreboard(Player $player, string $title): void {
-        // TODO: Add scoreboard logic to update the title
+    public function updateScoreboard(Player $player, string $title): void {
+        // TODO: Add logic to update the scoreboard title
     }
 
-    private function removeScoreboard(Player $player): void {
+    public function removeScoreboard(Player $player): void {
         // TODO: Add logic to remove the scoreboard
     }
 }
