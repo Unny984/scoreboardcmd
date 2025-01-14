@@ -51,9 +51,11 @@ class Main extends PluginBase {
 
     public function startCountdown(Player $player, int $time): void {
         if ($this->timerAddon !== null) {
+            $this->getLogger()->info("Setting timer for player: {$player->getName()} with time: {$time}");
             $this->timerAddon->setTimer($player, $time);
         }
     }
+    
 
     public function stopCountdown(Player $player): void {
         if ($this->timerAddon !== null) {

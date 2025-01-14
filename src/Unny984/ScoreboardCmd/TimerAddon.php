@@ -36,8 +36,10 @@ class TimerAddon implements Listener {
     
 
     public function setTimer(Player $player, int $time): void {
+        $this->plugin->getLogger()->info("Timer set for player: {$player->getName()} with time: {$time}");
         $this->timers[$player->getName()] = $time;
     }
+    
 
     public function getTimer(Player $player): ?int {
         return $this->timers[$player->getName()] ?? null;
@@ -50,12 +52,15 @@ class TimerAddon implements Listener {
     public function updateTimers(): void {
         foreach ($this->timers as $name => $time) {
             if ($time > 0) {
+                $this->plugin->getLogger()->info("Updating timer for player: {$name} to " . ($time - 1));
                 $this->timers[$name]--;
             } else {
-                unset($this->timers[$name]); // Remove the timer if it reaches 0
+                $this->plugin->getLogger()->info("Timer for player: {$name} has ended.");
+                unset($this->timers[$name]); // Remove timer when it reaches 0
             }
         }
     }
+    
 
     public function onTagsResolve(TagsResolveEvent $event): void {
         $player = $event->getPlayer();
