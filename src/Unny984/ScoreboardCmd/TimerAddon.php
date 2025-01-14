@@ -46,7 +46,6 @@ class TimerAddon implements Listener {
         if ($this->timer !== null) {
             if ($this->timer > 0) {
                 $this->timer--;
-
                 foreach ($this->plugin->getServer()->getOnlinePlayers() as $player) {
                     $minutes = intdiv($this->timer, 60);
                     $seconds = $this->timer % 60;
@@ -55,7 +54,7 @@ class TimerAddon implements Listener {
 
                     // Update tags for each player dynamically
                     $event = new TagsResolveEvent($player, [
-                        "scorecountdown.timer" => sprintf("%02d:%02d", $minutes, $seconds)
+                        "scorecountdown.timer" => sprintf("%02d:%02d", $minutes, $seconds),
                     ]);
                     $event->call();
                 }
