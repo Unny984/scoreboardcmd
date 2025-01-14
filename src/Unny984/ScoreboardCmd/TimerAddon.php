@@ -8,6 +8,7 @@ use pocketmine\event\Listener;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\Task;
+use pocketmine\Server;
 
 class TimerAddon implements Listener {
 
@@ -34,6 +35,10 @@ class TimerAddon implements Listener {
         }, 20); // Runs every second
     }
     
+    public function triggerTagsUpdate(Player $player): void {
+        $event = new TagsResolveEvent($player);
+        Server::getInstance()->getPluginManager()->callEvent($event);
+    }
 
     public function setTimer(Player $player, int $time): void {
         $this->plugin->getLogger()->info("Timer set for player: {$player->getName()} with time: {$time}");
@@ -54,14 +59,19 @@ class TimerAddon implements Listener {
             if ($time > 0) {
                 $this->plugin->getLogger()->info("Updating timer for player: {$name} to " . ($time - 1));
                 $this->timers[$name]--;
+    
+                // Trigger the TagsResolveEvent to update the scoreboard
+                $player = $this->plugin->getServer()->getPlayerExact($name);
+                if ($player !== null) {
+                    $this->triggerTagsUpdate($player);
+                }
             } else {
                 $this->plugin->getLogger()->info("Timer for player: {$name} has ended.");
-                unset($this->timers[$name]); // Remove timer when it reaches 0
+                unset($this->timers[$name]);
             }
         }
     }
     
-
     public function onTagsResolve(TagsResolveEvent $event): void {
         $player = $event->getPlayer();
         $name = $player->getName();
@@ -73,13 +83,13 @@ class TimerAddon implements Listener {
             $minutes = intdiv($time, 60);
             $seconds = $time % 60;
     
-            $this->plugin->getLogger()->info("Setting timer: {$minutes}:{$seconds}");
+            $this->plugin->getLogger()->info("Setting timer in TagsResolveEvent: {$minutes}:{$seconds}");
     
-            // Create a ScoreTag and set it
             $event->setTag(new ScoreTag("scorecountdown.timer", sprintf("%02d:%02d", $minutes, $seconds)));
         } else {
-            $this->plugin->getLogger()->info("No active timer for player: $name");
+            $this->plugin->getLogger()->info("No active timer for player in TagsResolveEvent: $name");
             $event->setTag(new ScoreTag("scorecountdown.timer", "00:00"));
         }
-    }    
+    }
+       
 }
