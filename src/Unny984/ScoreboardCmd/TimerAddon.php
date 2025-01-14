@@ -3,8 +3,9 @@
 namespace Unny984\ScoreboardCmd;
 
 use Ifera\ScoreHud\event\TagsResolveEvent;
-use Ifera\ScoreHud\scoreboard\ScoreTag; // <-- IMPORTANT: import this class
+use Ifera\ScoreHud\scoreboard\ScoreTag;
 use pocketmine\event\Listener;
+use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\Task;
 
@@ -19,19 +20,18 @@ class TimerAddon implements Listener {
         // Register as an event listener
         $plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
 
-        // Schedule a repeating task every second (20 ticks)
-        $plugin->getScheduler()->scheduleRepeatingTask(
-            new class($this) extends Task {
-                private TimerAddon $addon;
-                public function __construct(TimerAddon $addon) {
-                    $this->addon = $addon;
-                }
-                public function onRun(): void {
-                    $this->addon->updateTimer();
-                }
-            },
-            20
-        );
+        // Schedule a repeating task
+        $plugin->getScheduler()->scheduleRepeatingTask(new class($this) extends Task {
+            private TimerAddon $addon;
+
+            public function __construct(TimerAddon $addon) {
+                $this->addon = $addon;
+            }
+
+            public function onRun(): void {
+                $this->addon->updateTimer();
+            }
+        }, 20); // Runs every 20 ticks (1 second)
     }
 
     public function setTimer(int $time): void {
@@ -48,27 +48,24 @@ class TimerAddon implements Listener {
         if ($this->timer !== null) {
             if ($this->timer > 0) {
                 $this->timer--;
+
                 foreach ($this->plugin->getServer()->getOnlinePlayers() as $player) {
                     $minutes = intdiv($this->timer, 60);
                     $seconds = $this->timer % 60;
 
-                    $this->plugin->getLogger()->info(
-                        "Updating timer for player {$player->getName()}: {$minutes}:{$seconds}"
-                    );
+                    $this->plugin->getLogger()->info("Updating timer for player {$player->getName()}: {$minutes}:{$seconds}");
 
-                    // Create a ScoreTag for this countdown
+                    // Create the ScoreTag object with 2 parameters (identifier + value)
                     $scoreTag = new ScoreTag(
-                        "scorecountdown.timer",                  // Tag identifier (used in scorehud.yml)
-                        sprintf("%02d:%02d", $minutes, $seconds), // The displayed value
-                        "scorecountdown.timer"                   // A unique key
+                        "scorecountdown.timer",           // Tag identifier
+                        sprintf("%02d:%02d", $minutes, $seconds) // Actual display value
                     );
 
-                    // Create and call the event
+                    // Send it via the TagsResolveEvent
                     $event = new TagsResolveEvent($player, [$scoreTag]);
                     $event->call();
                 }
             } else {
-                // Timer reached zero
                 $this->plugin->getLogger()->info("Global timer has ended.");
                 $this->clearTimer();
             }
