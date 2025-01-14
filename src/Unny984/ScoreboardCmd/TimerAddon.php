@@ -46,6 +46,7 @@ class TimerAddon implements Listener {
         if ($this->timer !== null) {
             if ($this->timer > 0) {
                 $this->timer--;
+
                 foreach ($this->plugin->getServer()->getOnlinePlayers() as $player) {
                     $minutes = intdiv($this->timer, 60);
                     $seconds = $this->timer % 60;
