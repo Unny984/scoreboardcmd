@@ -2,31 +2,21 @@
 
 namespace Unny984\ScoreboardCmd;
 
-use Ifera\ScoreHud\addon\Addon;
+use Ifera\ScoreHud\event\TagsResolveEvent;
+use pocketmine\event\Listener;
+use pocketmine\plugin\PluginBase;
 use pocketmine\player\Player;
 
-class TimerAddon extends Addon {
+class TimerAddon implements Listener {
 
+    private PluginBase $plugin;
     private array $timers = [];
 
-    public function __construct($plugin) {
-        parent::__construct($plugin);
-    }
+    public function __construct(PluginBase $plugin) {
+        $this->plugin = $plugin;
 
-    public function getProcessedTags(Player $player): array {
-        $name = $player->getName();
-        if (isset($this->timers[$name])) {
-            $time = $this->timers[$name];
-            $minutes = intdiv($time, 60);
-            $seconds = $time % 60;
-            return [
-                "scorecountdown.timer" => sprintf("%02d:%02d", $minutes, $seconds)
-            ];
-        }
-
-        return [
-            "scorecountdown.timer" => "00:00"
-        ];
+        // Register this class as an event listener
+        $plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
     }
 
     public function setTimer(Player $player, int $time): void {
@@ -41,13 +31,21 @@ class TimerAddon extends Addon {
         unset($this->timers[$player->getName()]);
     }
 
-    public function updateTimers(): void {
-        foreach ($this->timers as $name => $time) {
-            if ($time > 0) {
-                $this->timers[$name]--;
-            } else {
-                unset($this->timers[$name]);
-            }
+    /**
+     * Listen for the TagsResolveEvent to add custom placeholders
+     */
+    public function onTagsResolve(TagsResolveEvent $event): void {
+        $player = $event->getPlayer();
+        $name = $player->getName();
+
+        if (isset($this->timers[$name])) {
+            $time = $this->timers[$name];
+            $minutes = intdiv($time, 60);
+            $seconds = $time % 60;
+
+            $event->setTag("scorecountdown.timer", sprintf("%02d:%02d", $minutes, $seconds));
+        } else {
+            $event->setTag("scorecountdown.timer", "00:00");
         }
     }
 }
