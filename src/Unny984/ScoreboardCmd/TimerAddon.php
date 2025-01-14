@@ -12,7 +12,7 @@ use pocketmine\scheduler\Task;
 class TimerAddon implements Listener {
 
     private PluginBase $plugin;
-    private array $timers = [];
+    protected array $timers = []; // Changed to protected
 
     public function __construct(PluginBase $plugin) {
         $this->plugin = $plugin;
@@ -59,7 +59,7 @@ class TimerAddon implements Listener {
             $time = $this->timers[$name];
             $minutes = intdiv($time, 60);
             $seconds = $time % 60;
-            $event->getTags()->setTag("scorecountdown.timer", sprintf("%02d:%02d", $minutes, $seconds));
+            $event->setTag("scorecountdown.timer", sprintf("%02d:%02d", $minutes, $seconds));
         }
     }
 }
