@@ -8,6 +8,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\utils\TextFormat;
+use pocketmine\world\World;
 
 class Main extends PluginBase {
 
@@ -75,8 +76,7 @@ class Main extends PluginBase {
 
             public function onRun(): void {
                 if ($this->remainingTime <= 0) {
-                    $this->plugin->getScheduler()->cancelTask($this);
-                    $this->plugin->removeScoreboard($this->player);
+                    $this->plugin->stopCountdown($this->player);
                     $this->player->sendMessage(TextFormat::GREEN . "Countdown finished!");
                     return;
                 }
@@ -106,10 +106,12 @@ class Main extends PluginBase {
     }
 
     public function updateScoreboard(Player $player, string $title): void {
-        // TODO: Add logic to update the scoreboard title
+        // Send a scoreboard popup to the player
+        $player->sendPopup(TextFormat::GOLD . "Countdown Timer\n" . TextFormat::YELLOW . $title);
     }
 
     public function removeScoreboard(Player $player): void {
-        // TODO: Add logic to remove the scoreboard
+        // Clear the scoreboard popup
+        $player->sendPopup("");
     }
 }
