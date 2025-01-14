@@ -64,10 +64,22 @@ class TimerAddon implements Listener {
         }
     }
     
+    
 
     public function triggerTagsUpdate(Player $player): void {
-        // Trigger the TagsResolveEvent manually
-        $event = new TagsResolveEvent($player);
+        // Get the current timer value or set a default value
+        $time = $this->getTimer($player) ?? 0;
+        $minutes = intdiv($time, 60);
+        $seconds = $time % 60;
+        $value = sprintf("%02d:%02d", $minutes, $seconds);
+    
+        // Create an array of tags to pass to the event
+        $tags = [
+            "scorecountdown.timer" => $value
+        ];
+    
+        // Instantiate and call the TagsResolveEvent
+        $event = new TagsResolveEvent($player, $tags);
         $event->call();
     }
 }
