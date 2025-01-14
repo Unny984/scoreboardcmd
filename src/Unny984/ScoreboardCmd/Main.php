@@ -1,51 +1,46 @@
 <?php
-namespace ScoreboardCountdown;
+
+namespace Unny984\ScoreboardCmd;
 
 use pocketmine\plugin\PluginBase;
-use pocketmine\event\Listener;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\Player;
+use pocketmine\player\Player;
 use pocketmine\scheduler\Task;
-use pocketmine\utils\TextFormat as TF;
-use pocketmine\level\Position;
-use pocketmine\Server;
-use pocketmine\entity\EffectInstance;
-use pocketmine\entity\Effect;
-use pocketmine\entity\Living;
-use pocketmine\entity\Human;
-use pocketmine\utils\Config;
+use pocketmine\utils\TextFormat;
 
-class Main extends PluginBase implements Listener {
-    private $countdowns = [];
-    private $tasks = [];
+class Main extends PluginBase {
 
-    public function onEnable() {
-        $this->getServer()->getPluginManager()->registerEvents($this, $this);
-        $this->getLogger()->info(TF::GREEN . "ScoreboardCountdown plugin enabled!");
+    private ?Task $countdownTask = null;
+
+    public function onEnable(): void {
+        $this->getLogger()->info(TextFormat::GREEN . "ScoreboardCmd enabled!");
     }
 
-    public function onDisable() {
-        $this->getLogger()->info(TF::RED . "ScoreboardCountdown plugin disabled!");
+    public function onDisable(): void {
+        $this->getLogger()->info(TextFormat::RED . "ScoreboardCmd disabled!");
+        if ($this->countdownTask !== null) {
+            $this->getScheduler()->cancelTask($this->countdownTask->getTaskId());
+        }
     }
 
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
         if (!$sender instanceof Player) {
-            $sender->sendMessage(TF::RED . "This command can only be used in-game.");
-            return false;
+            $sender->sendMessage(TextFormat::RED . "This command can only be used in-game.");
+            return true;
         }
 
         switch ($command->getName()) {
             case "countdown":
-                if (count($args) < 1) {
-                    $sender->sendMessage(TF::RED . "Usage: /countdown <time_in_seconds>");
-                    return false;
+                if (count($args) !== 1 || !is_numeric($args[0])) {
+                    $sender->sendMessage(TextFormat::YELLOW . "Usage: /countdown <time_in_seconds>");
+                    return true;
                 }
 
                 $time = (int)$args[0];
                 if ($time <= 0) {
-                    $sender->sendMessage(TF::RED . "Time must be greater than zero.");
-                    return false;
+                    $sender->sendMessage(TextFormat::RED . "Please specify a positive number of seconds.");
+                    return true;
                 }
 
                 $this->startCountdown($sender, $time);
@@ -54,74 +49,67 @@ class Main extends PluginBase implements Listener {
             case "stopcountdown":
                 $this->stopCountdown($sender);
                 return true;
-
-            default:
-                return false;
         }
+
+        return false;
     }
 
-    private function startCountdown(Player $player, int $time) {
-        if (isset($this->tasks[$player->getName()])) {
-            $player->sendMessage(TF::RED . "A countdown is already running.");
+    private function startCountdown(Player $player, int $time): void {
+        if ($this->countdownTask !== null) {
+            $player->sendMessage(TextFormat::RED . "A countdown is already running.");
             return;
         }
 
-        $this->tasks[$player->getName()] = $this->getScheduler()->scheduleRepeatingTask(new class($this, $player, $time) extends Task {
-            private $plugin;
-            private $player;
-            private $time;
+        $player->sendMessage(TextFormat::GREEN . "Countdown started for {$time} seconds.");
 
-            public function __construct(Main $plugin, Player $player, int $time) {
-                $this->plugin = $plugin;
+        $this->countdownTask = new class($player, $time, $this) extends Task {
+            private Player $player;
+            private int $remainingTime;
+            private Main $plugin;
+
+            public function __construct(Player $player, int $time, Main $plugin) {
                 $this->player = $player;
-                $this->time = $time;
+                $this->remainingTime = $time;
+                $this->plugin = $plugin;
             }
 
-            public function onRun(int $currentTick) {
-                if ($this->time <= 0) {
-                    $this->plugin->stopCountdown($this->player);
-                    $this->player->sendMessage(TF::GREEN . "Countdown finished!");
+            public function onRun(): void {
+                if ($this->remainingTime <= 0) {
+                    $this->plugin->getScheduler()->cancelTask($this->getTaskId());
+                    $this->plugin->removeScoreboard($this->player);
+                    $this->player->sendMessage(TextFormat::GREEN . "Countdown finished!");
                     return;
                 }
 
-                $minutes = intdiv($this->time, 60);
-                $seconds = $this->time % 60;
+                $minutes = intdiv($this->remainingTime, 60);
+                $seconds = $this->remainingTime % 60;
                 $title = sprintf("%02d:%02d", $minutes, $seconds);
-
                 $this->plugin->updateScoreboard($this->player, $title);
 
-                $this->time--;
+                $this->remainingTime--;
             }
-        }, 20);
+        };
 
-        $player->sendMessage(TF::GREEN . "Countdown started for $time seconds.");
+        $this->getScheduler()->scheduleRepeatingTask($this->countdownTask, 20); // Runs every second
     }
 
-    private function stopCountdown(Player $player) {
-        if (!isset($this->tasks[$player->getName()])) {
-            $player->sendMessage(TF::RED . "No countdown is running.");
+    private function stopCountdown(Player $player): void {
+        if ($this->countdownTask === null) {
+            $player->sendMessage(TextFormat::RED . "No countdown is currently running.");
             return;
         }
 
-        $this->tasks[$player->getName()]->cancel();
-        unset($this->tasks[$player->getName()]);
-
+        $this->getScheduler()->cancelTask($this->countdownTask->getTaskId());
+        $this->countdownTask = null;
         $this->removeScoreboard($player);
-
-        $player->sendMessage(TF::YELLOW . "Countdown stopped.");
+        $player->sendMessage(TextFormat::GREEN . "Countdown stopped.");
     }
 
-    private function updateScoreboard(Player $player, string $title) {
-        // Your scoreboard handling logic here.
-        // This is pseudo-code as scoreboard implementation varies.
-        // Use an appropriate library or API to handle it.
-
-        $player->sendPopup($title); // Temporary example, replace with actual scoreboard logic.
+    private function updateScoreboard(Player $player, string $title): void {
+        // TODO: Add scoreboard logic to update the title
     }
 
-    private function removeScoreboard(Player $player) {
-        // Logic to remove the scoreboard from the player.
-        // Replace with actual implementation based on the library you're using.
-        $player->sendPopup(""); // Temporary example.
+    private function removeScoreboard(Player $player): void {
+        // TODO: Add logic to remove the scoreboard
     }
 }
