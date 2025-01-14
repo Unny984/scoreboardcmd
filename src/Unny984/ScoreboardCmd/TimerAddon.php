@@ -41,12 +41,11 @@ class TimerAddon implements Listener {
             $minutes = intdiv($time, 60);
             $seconds = $time % 60;
 
-            // Create a ScoreTag object for the placeholder
-            $tag = new ScoreTag("scorecountdown.timer", sprintf("%02d:%02d", $minutes, $seconds));
-            $event->setTag($tag);
+            // Create a ScoreTag and set it
+            $event->setTag(new ScoreTag("scorecountdown.timer", sprintf("%02d:%02d", $minutes, $seconds)));
         } else {
-            $tag = new ScoreTag("scorecountdown.timer", "00:00");
-            $event->setTag($tag);
+            // Default value when the timer is not set
+            $event->setTag(new ScoreTag("scorecountdown.timer", "00:00"));
         }
     }
 }
