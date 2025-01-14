@@ -20,3 +20,5 @@ permissions:
   scoreboardcmd.stopcountdown:
     description: Allows stopping the countdown.
     default: true
+depend:
+  - ScoreHud
