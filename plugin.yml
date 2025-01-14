@@ -1,0 +1,22 @@
+name: ScoreboardCmd
+main: Unny984\ScoreboardCmd\Main
+version: 1.0.0
+api: [5.0.0]
+author: Unny984
+description: A plugin to control a scoreboard that displays a countdown timer via commands.
+commands:
+  countdown:
+    description: Start a countdown on the scoreboard.
+    usage: /countdown <time_in_seconds>
+    permission: scoreboardcmd.countdown
+  stopcountdown:
+    description: Stop the countdown and remove the scoreboard.
+    usage: /stopcountdown
+    permission: scoreboardcmd.stopcountdown
+permissions:
+  scoreboardcmd.countdown:
+    description: Allows starting a countdown.
+    default: true
+  scoreboardcmd.stopcountdown:
+    description: Allows stopping the countdown.
+    default: true
