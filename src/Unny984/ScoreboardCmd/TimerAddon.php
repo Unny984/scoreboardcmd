@@ -52,7 +52,7 @@ class TimerAddon implements Listener {
                 $this->plugin->getLogger()->info("Updating timer for player: {$name} to " . ($time - 1));
                 $this->timers[$name]--;
     
-                // Trigger TagsResolveEvent for the player
+                // Trigger PlayerScoreTagEvent for the player
                 $player = $this->plugin->getServer()->getPlayerExact($name);
                 if ($player !== null) {
                     $this->triggerTagsUpdate($player);
@@ -64,7 +64,6 @@ class TimerAddon implements Listener {
         }
     }
     
-    
 
     public function triggerTagsUpdate(Player $player): void {
         // Get the current timer value or set a default value
@@ -73,13 +72,11 @@ class TimerAddon implements Listener {
         $seconds = $time % 60;
         $value = sprintf("%02d:%02d", $minutes, $seconds);
     
-        // Create an array of tags to pass to the event
-        $tags = [
-            "scorecountdown.timer" => $value
-        ];
+        // Create a ScoreTag object
+        $tag = new ScoreTag("scorecountdown.timer", $value);
     
-        // Instantiate and call the TagsResolveEvent
-        $event = new TagsResolveEvent($player, $tags);
+        // Pass the ScoreTag object to the PlayerScoreTagEvent
+        $event = new PlayerScoreTagEvent($player, $tag);
         $event->call();
     }
 }
