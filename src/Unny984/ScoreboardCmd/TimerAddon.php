@@ -61,19 +61,24 @@ class TimerAddon implements Listener {
     public function onTagsResolve(TagsResolveEvent $event): void {
         $player = $event->getPlayer();
         $name = $player->getName();
-
+    
         if (isset($this->timers[$name])) {
             $time = $this->timers[$name];
             $minutes = intdiv($time, 60);
             $seconds = $time % 60;
-
+    
             $this->plugin->getLogger()->info("Setting timer in TagsResolveEvent: {$minutes}:{$seconds}");
-
-            // Set the placeholder value for scorecountdown.timer
-            $event->setTag("scorecountdown.timer", sprintf("%02d:%02d", $minutes, $seconds));
+    
+            // Set the placeholder value as a single parameter (key-value array)
+            $event->setTag([
+                "scorecountdown.timer" => sprintf("%02d:%02d", $minutes, $seconds)
+            ]);
         } else {
             $this->plugin->getLogger()->info("No active timer for player in TagsResolveEvent: $name");
-            $event->setTag("scorecountdown.timer", "00:00");
+            $event->setTag([
+                "scorecountdown.timer" => "00:00"
+            ]);
         }
     }
+    
 }
