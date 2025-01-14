@@ -3,8 +3,6 @@
 namespace Unny984\ScoreboardCmd;
 
 use pocketmine\plugin\PluginBase;
-use pocketmine\player\Player;
-use Unny984\ScoreboardCmd\TimerAddon;
 
 class Main extends PluginBase {
 
@@ -12,7 +10,7 @@ class Main extends PluginBase {
 
     public function onEnable(): void {
         $this->timerAddon = new TimerAddon($this);
-        $this->getLogger()->info("ScoreCountdown enabled!");
+        $this->getLogger()->info("ScoreboardCmd has been enabled!");
     }
 
     public function startCountdown(Player $player, int $time): void {

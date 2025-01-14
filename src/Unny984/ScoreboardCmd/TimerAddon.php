@@ -15,7 +15,9 @@ class TimerAddon implements Listener {
 
     public function __construct(PluginBase $plugin) {
         $this->plugin = $plugin;
-        $this->plugin->getServer()->getPluginManager()->registerEvents($this, $this);
+
+        // Use the main plugin to register events
+        $plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
     }
 
     public function setTimer(string $playerName, int $time): void {
