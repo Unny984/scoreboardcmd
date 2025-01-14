@@ -36,8 +36,11 @@ class TimerAddon implements Listener {
     }
     
     public function triggerTagsUpdate(Player $player): void {
-        // Trigger the TagsResolveEvent with an empty array of tags
-        $event = new TagsResolveEvent($player, []);
+        // Create a ScoreTag with a placeholder name and a default value
+        $tag = new ScoreTag("scorecountdown.timer", "00:00");
+    
+        // Manually fire the PlayerScoreTagEvent with the ScoreTag
+        $event = new PlayerScoreTagEvent($player, $tag);
         $event->call();
     }
 
@@ -72,6 +75,7 @@ class TimerAddon implements Listener {
             }
         }
     }
+    
     
 
     public function onTagsResolve(TagsResolveEvent $event): void {
