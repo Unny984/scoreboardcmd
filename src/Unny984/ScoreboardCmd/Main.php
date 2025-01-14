@@ -3,7 +3,7 @@
 namespace Unny984\ScoreboardCmd;
 
 use pocketmine\plugin\PluginBase;
-use pocketmine\player\Player; // Correct import for Player class
+use pocketmine\player\Player;
 
 class Main extends PluginBase {
 
@@ -16,13 +16,13 @@ class Main extends PluginBase {
 
     public function startCountdown(Player $player, int $time): void {
         if ($this->timerAddon !== null) {
-            $this->timerAddon->startTimer($player, $time);
+            $this->timerAddon->setTimer($player, $time);
         }
     }
 
     public function stopCountdown(Player $player): void {
         if ($this->timerAddon !== null) {
-            $this->timerAddon->stopTimer($player);
+            $this->timerAddon->clearTimer($player);
         }
     }
 }
