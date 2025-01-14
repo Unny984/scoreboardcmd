@@ -2,15 +2,14 @@
 
 namespace Unny984\ScoreboardCmd;
 
-use Ifera\ScoreHud\libs\JackMD\ScoreHud\addon\AddonInterface;
+use Ifera\ScoreHud\addon\Addon;
 use pocketmine\player\Player;
-use pocketmine\plugin\PluginBase;
 
-class TimerAddon extends AddonInterface {
+class TimerAddon extends Addon {
 
     private array $timers = [];
 
-    public function __construct(PluginBase $plugin) {
+    public function __construct($plugin) {
         parent::__construct($plugin);
     }
 
