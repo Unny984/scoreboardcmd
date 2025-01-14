@@ -2,13 +2,11 @@
 
 namespace Unny984\ScoreboardCmd;
 
-use Ifera\ScoreHud\event\TagsResolveEvent;
+use Ifera\ScoreHud\event\PlayerScoreTagEvent;
 use Ifera\ScoreHud\scoreboard\ScoreTag;
 use pocketmine\event\Listener;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
-use pocketmine\scheduler\Task;
-use pocketmine\Server;
 
 class TimerAddon implements Listener {
 
@@ -17,38 +15,27 @@ class TimerAddon implements Listener {
 
     public function __construct(PluginBase $plugin) {
         $this->plugin = $plugin;
-    
+
         // Register this class as an event listener
         $plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
-    
+
         // Schedule a repeating task to update the timers
-        $plugin->getScheduler()->scheduleRepeatingTask(new class($this) extends Task {
+        $plugin->getScheduler()->scheduleRepeatingTask(new class($this) extends \pocketmine\scheduler\Task {
             private TimerAddon $addon;
-    
+
             public function __construct(TimerAddon $addon) {
                 $this->addon = $addon;
             }
-    
+
             public function onRun(): void {
                 $this->addon->updateTimers();
             }
         }, 20); // Runs every second
     }
-    
-    public function triggerTagsUpdate(Player $player): void {
-        // Create a ScoreTag with a placeholder name and a default value
-        $tag = new ScoreTag("scorecountdown.timer", "00:00");
-    
-        // Manually fire the PlayerScoreTagEvent with the ScoreTag
-        $event = new PlayerScoreTagEvent($player, $tag);
-        $event->call();
-    }
 
     public function setTimer(Player $player, int $time): void {
-        $this->plugin->getLogger()->info("Timer set for player: {$player->getName()} with time: {$time}");
         $this->timers[$player->getName()] = $time;
     }
-    
 
     public function getTimer(Player $player): ?int {
         return $this->timers[$player->getName()] ?? null;
@@ -63,7 +50,7 @@ class TimerAddon implements Listener {
             if ($time > 0) {
                 $this->plugin->getLogger()->info("Updating timer for player: {$name} to " . ($time - 1));
                 $this->timers[$name]--;
-    
+
                 // Trigger the TagsResolveEvent to update the scoreboard
                 $player = $this->plugin->getServer()->getPlayerExact($name);
                 if ($player !== null) {
@@ -75,27 +62,17 @@ class TimerAddon implements Listener {
             }
         }
     }
-    
-    
 
-    public function onTagsResolve(TagsResolveEvent $event): void {
-        $player = $event->getPlayer();
-        $name = $player->getName();
-    
-        $this->plugin->getLogger()->info("TagsResolveEvent triggered for player: $name");
-    
-        if (isset($this->timers[$name])) {
-            $time = $this->timers[$name];
-            $minutes = intdiv($time, 60);
-            $seconds = $time % 60;
-    
-            $this->plugin->getLogger()->info("Setting timer in TagsResolveEvent: {$minutes}:{$seconds}");
-    
-            $event->setTag(new ScoreTag("scorecountdown.timer", sprintf("%02d:%02d", $minutes, $seconds)));
-        } else {
-            $this->plugin->getLogger()->info("No active timer for player in TagsResolveEvent: $name");
-            $event->setTag(new ScoreTag("scorecountdown.timer", "00:00"));
-        }
+    public function triggerTagsUpdate(Player $player): void {
+        // Create a ScoreTag with the current timer value or a default value
+        $time = $this->getTimer($player) ?? 0;
+        $minutes = intdiv($time, 60);
+        $seconds = $time % 60;
+        $value = sprintf("%02d:%02d", $minutes, $seconds);
+
+        // Create and call the PlayerScoreTagEvent
+        $tag = new ScoreTag("scorecountdown.timer", $value);
+        $event = new PlayerScoreTagEvent($player, $tag);
+        $event->call();
     }
-       
 }
