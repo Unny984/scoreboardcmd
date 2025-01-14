@@ -48,7 +48,12 @@ class TimerAddon implements Listener {
             if ($this->timer > 0) {
                 $this->timer--;
                 foreach ($this->plugin->getServer()->getOnlinePlayers() as $player) {
-                    $event = new TagsResolveEvent($player);
+                    $tags = [
+                        "scorecountdown.timer" => sprintf("%02d:%02d", intdiv($this->timer, 60), $this->timer % 60)
+                    ];
+
+                    // Pass both player and tags to TagsResolveEvent
+                    $event = new TagsResolveEvent($player, $tags);
                     $event->call();
                 }
             } else {
