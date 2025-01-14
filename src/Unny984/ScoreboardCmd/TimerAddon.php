@@ -47,18 +47,25 @@ class TimerAddon implements Listener {
         if ($this->timer !== null) {
             if ($this->timer > 0) {
                 $this->timer--;
+    
                 foreach ($this->plugin->getServer()->getOnlinePlayers() as $player) {
-                    // Create a ScoreTag object
-                    $scoreTag = new ScoreTag("scorecountdown.timer", sprintf("%02d:%02d", intdiv($this->timer, 60), $this->timer % 60));
-
-                    // Trigger PlayerScoreTagEvent with ScoreTag
-                    $event = new PlayerScoreTagEvent($player, $scoreTag);
+                    $minutes = intdiv($this->timer, 60);
+                    $seconds = $this->timer % 60;
+    
+                    // Log the timer update
+                    $this->plugin->getLogger()->info("Updating timer for player {$player->getName()}: {$minutes}:{$seconds}");
+    
+                    // Trigger TagsResolveEvent dynamically
+                    $event = new TagsResolveEvent($player, [
+                        "scorecountdown.timer" => sprintf("%02d:%02d", $minutes, $seconds)
+                    ]);
                     $event->call();
                 }
             } else {
-                $this->plugin->getLogger()->info("Global timer has ended");
+                $this->plugin->getLogger()->info("Global timer has ended.");
                 $this->clearTimer();
             }
         }
     }
+    
 }
