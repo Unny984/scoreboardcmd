@@ -1,10 +1,10 @@
 <?php
 
-namespace Unny984\ScoreCountdown;
+namespace Unny984\ScoreboardCmd;
 
 use pocketmine\plugin\PluginBase;
 use pocketmine\player\Player;
-use Unny984\ScoreCountdown\TimerAddon;
+use Unny984\ScoreboardCmd\TimerAddon;
 
 class Main extends PluginBase {
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Unny984\ScoreCountdown;
+namespace Unny984\ScoreboardCmd;
 
 use Ifera\ScoreHud\event\PlayerScoreTagEvent;
 use pocketmine\event\Listener;
