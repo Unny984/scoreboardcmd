@@ -3,6 +3,7 @@
 namespace Unny984\ScoreboardCmd;
 
 use Ifera\ScoreHud\event\TagsResolveEvent;
+use Ifera\ScoreHud\scoreboard\ScoreTag;
 use pocketmine\event\Listener;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
@@ -61,23 +62,21 @@ class TimerAddon implements Listener {
     public function onTagsResolve(TagsResolveEvent $event): void {
         $player = $event->getPlayer();
         $name = $player->getName();
-
+    
         if (isset($this->timers[$name])) {
             $time = $this->timers[$name];
             $minutes = intdiv($time, 60);
             $seconds = $time % 60;
-
+    
             $this->plugin->getLogger()->info("Setting timer in TagsResolveEvent: {$minutes}:{$seconds}");
-
-            // Set the tag value for the timer
-            $event->setTag([
-                "scorecountdown.timer" => sprintf("%02d:%02d", $minutes, $seconds)
-            ]);
+    
+            // Set the placeholder using ScoreTag
+            $event->setTag(new ScoreTag("scorecountdown.timer", sprintf("%02d:%02d", $minutes, $seconds)));
         } else {
             $this->plugin->getLogger()->info("No active timer for player in TagsResolveEvent: $name");
-            $event->setTag([
-                "scorecountdown.timer" => "00:00"
-            ]);
+    
+            // Set the placeholder to a default value
+            $event->setTag(new ScoreTag("scorecountdown.timer", "00:00"));
         }
     }
 }
