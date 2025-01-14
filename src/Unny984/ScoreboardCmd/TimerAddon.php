@@ -7,6 +7,7 @@ use Ifera\ScoreHud\scoreboard\ScoreTag;
 use pocketmine\event\Listener;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
+use pocketmine\scheduler\Task;
 
 class TimerAddon implements Listener {
 
@@ -18,6 +19,19 @@ class TimerAddon implements Listener {
 
         // Register this class as an event listener
         $plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
+
+        // Schedule a repeating task to update the timers
+        $plugin->getScheduler()->scheduleRepeatingTask(new class($this) extends Task {
+            private TimerAddon $addon;
+
+            public function __construct(TimerAddon $addon) {
+                $this->addon = $addon;
+            }
+
+            public function onRun(): void {
+                $this->addon->updateTimers();
+            }
+        }, 20); // Runs every second
     }
 
     public function setTimer(Player $player, int $time): void {
@@ -30,6 +44,16 @@ class TimerAddon implements Listener {
 
     public function clearTimer(Player $player): void {
         unset($this->timers[$player->getName()]);
+    }
+
+    public function updateTimers(): void {
+        foreach ($this->timers as $name => $time) {
+            if ($time > 0) {
+                $this->timers[$name]--;
+            } else {
+                unset($this->timers[$name]); // Remove the timer if it reaches 0
+            }
+        }
     }
 
     public function onTagsResolve(TagsResolveEvent $event): void {
