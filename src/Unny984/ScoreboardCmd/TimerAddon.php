@@ -5,10 +5,19 @@ namespace Unny984\ScoreboardCmd;
 use Ifera\ScoreHud\event\TagsResolveEvent;
 use pocketmine\event\Listener;
 use pocketmine\player\Player;
+use pocketmine\plugin\PluginBase;
 
 class TimerAddon implements Listener {
 
+    private PluginBase $plugin; // Store the plugin instance
     private array $timers = [];
+
+    public function __construct(PluginBase $plugin) {
+        $this->plugin = $plugin;
+
+        // Register this class as an event listener
+        $plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
+    }
 
     public function setTimer(Player $player, int $time): void {
         $this->timers[$player->getName()] = $time;
@@ -22,9 +31,6 @@ class TimerAddon implements Listener {
         unset($this->timers[$player->getName()]);
     }
 
-    /**
-     * Listen for the TagsResolveEvent to add custom placeholders
-     */
     public function onTagsResolve(TagsResolveEvent $event): void {
         $player = $event->getPlayer();
         $name = $player->getName();
