@@ -36,8 +36,9 @@ class TimerAddon implements Listener {
     }
     
     public function triggerTagsUpdate(Player $player): void {
-        $event = new TagsResolveEvent($player);
-        Server::getInstance()->getPluginManager()->callEvent($event);
+        // Trigger the TagsResolveEvent with an empty array of tags
+        $event = new TagsResolveEvent($player, []);
+        $event->call();
     }
 
     public function setTimer(Player $player, int $time): void {
@@ -72,6 +73,7 @@ class TimerAddon implements Listener {
         }
     }
     
+
     public function onTagsResolve(TagsResolveEvent $event): void {
         $player = $event->getPlayer();
         $name = $player->getName();
