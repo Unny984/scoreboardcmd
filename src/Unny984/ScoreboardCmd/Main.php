@@ -3,6 +3,7 @@
 namespace Unny984\ScoreboardCmd;
 
 use pocketmine\plugin\PluginBase;
+use pocketmine\player\Player; // Correct import for Player class
 
 class Main extends PluginBase {
 
