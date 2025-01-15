@@ -14,12 +14,24 @@ use Ifera\ScoreHud\event\PlayerTagUpdateEvent;
 use Ifera\ScoreHud\scoreboard\ScoreTag;
 
 class Main extends PluginBase implements Listener {
-    private $countdownTime = 0;
-    private $countdownTask = null;
-    private $isCountdownActive = false;
+    protected int $countdownTime = 0;
+    protected ?TaskHandler $countdownTask = null;
+    protected bool $isCountdownActive = false;
 
     public function onEnable(): void {
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
+    }
+
+    public function getCountdownTime(): int {
+        return $this->countdownTime;
+    }
+
+    public function setCountdownTime(int $time): void {
+        $this->countdownTime = $time;
+    }
+
+    public function isCountdownActive(): bool {
+        return $this->isCountdownActive;
     }
 
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
@@ -66,12 +78,13 @@ class Main extends PluginBase implements Listener {
             }
 
             public function onRun(): void {
-                if ($this->plugin->countdownTime <= 0) {
+                $time = $this->plugin->getCountdownTime();
+                if ($time <= 0) {
                     $this->plugin->stopCountdown();
                     return;
                 }
 
-                $this->plugin->countdownTime--;
+                $this->plugin->setCountdownTime($time - 1);
                 $this->plugin->updateScoreHudTags();
             }
         }, 20); // Run every second (20 ticks)
