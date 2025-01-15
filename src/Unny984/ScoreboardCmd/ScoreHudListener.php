@@ -2,41 +2,30 @@
 
 namespace Unny984\ScoreboardCmd;
 
-use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerJoinEvent;
-use Ifera\ScoreHud\event\PlayerTagUpdateEvent;
+use Ifera\ScoreHud\event\TagsResolveEvent;
 use Ifera\ScoreHud\scoreboard\ScoreTag;
+use pocketmine\event\Listener;
+use pocketmine\player\Player;
 
-class ScoreHudListener implements Listener
-{
+class ScoreHudListener implements Listener {
     private Main $plugin;
 
-    public function __construct(Main $plugin)
-    {
+    public function __construct(Main $plugin) {
         $this->plugin = $plugin;
     }
 
-    public function onPlayerJoin(PlayerJoinEvent $event): void
-    {
+    public function onTagsResolve(TagsResolveEvent $event): void {
         $player = $event->getPlayer();
-        $player->sendMessage("Scoreboard countdown enabled!");
-    }
+        $name = $player->getName();
 
-    public function onTagUpdate(PlayerTagUpdateEvent $event): void
-    {
-        $tag = $event->getTag(); // Retrieve the ScoreTag object
-    
-        // Debugging: Log the tag name and current value
-        $this->plugin->getLogger()->info("DEBUG: Updating tag '{$tag->getName()}'");
-    
-        if ($tag->getName() === "scorecountdown.timer") {
-            $value = $this->plugin->getFormattedTime();
-    
-            // Debugging: Log the value being set
-            $this->plugin->getLogger()->info("DEBUG: Setting tag value to '$value'");
-    
-            $tag->setValue($value); // Update the tag's value
-            $event->setTag($tag); // Update the event with the new tag
+        $time = $this->plugin->getTimer($player);
+        if ($time !== null) {
+            $minutes = intdiv($time, 60);
+            $seconds = $time % 60;
+
+            $event->setTag(new ScoreTag("scorecountdown.timer", sprintf("%02d:%02d", $minutes, $seconds)));
+        } else {
+            $event->setTag(new ScoreTag("scorecountdown.timer", "00:00"));
         }
-    }    
+    }
 }
