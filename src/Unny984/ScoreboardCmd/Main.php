@@ -53,11 +53,12 @@ class Main extends PluginBase {
                     $seconds = $this->timers[$name] % 60;
                     $formattedTime = sprintf("%02d:%02d", $minutes, $seconds);
     
-                    // Use TagsResolveEvent to update the timer dynamically
-                    $event = new \Ifera\ScoreHud\event\TagsResolveEvent($player, [
-                        new \Ifera\ScoreHud\scoreboard\ScoreTag("scorecountdown.timer", $formattedTime)
-                    ]);
-                    $event->call(); // Correctly invoke the event
+                    // Dynamically update the ScoreHud tag
+                    $event = new \Ifera\ScoreHud\event\TagsResolveEvent(
+                        $player,
+                        [new \Ifera\ScoreHud\scoreboard\ScoreTag("scorecountdown.timer", $formattedTime)]
+                    );
+                    $event->call();
                 }
             } else {
                 unset($this->timers[$name]);
@@ -65,10 +66,7 @@ class Main extends PluginBase {
         }
     }
     
-    
-    
-    
-    
+
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
         if (!$sender instanceof Player) {
             $sender->sendMessage("This command can only be used in-game.");
