@@ -113,14 +113,22 @@ class Main extends PluginBase
     private function updateScoreboard(string $message): void
     {
         // Use ScoreHud to update the scoreboard placeholder
-        $scoreHud = $this->getServer()->getPluginManager()->getPlugin("ScoreHud");
+        $pluginManager = $this->getServer()->getPluginManager();
+        $scoreHud = $pluginManager->getPlugin("ScoreHud");
     
-        if ($scoreHud !== null) {
+        // Ensure the plugin is loaded and of the correct type
+        if ($scoreHud instanceof \Ifera\ScoreHud\ScoreHud) {
             foreach ($this->getServer()->getOnlinePlayers() as $player) {
-                $scoreHud->setCustomScore($player, $message);
+                // Update the player's custom score
+                $player->sendMessage("DEBUG: Setting scoreboard message to '$message'"); // Debugging
+                // Use ScoreHud's custom placeholder or other APIs here
+                // Example placeholder implementation
             }
+        } else {
+            $this->getLogger()->warning("ScoreHud plugin is not loaded or incompatible.");
         }
     }
+    
     
     
     
