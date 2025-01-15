@@ -48,7 +48,7 @@ class Main extends PluginBase {
                 // Notify ScoreHud to refresh
                 $player = $this->getServer()->getPlayerExact($name);
                 if ($player !== null && $player->isOnline()) {
-                    $event = new TagsResolveEvent($player);
+                    $event = new TagsResolveEvent($player, []);
                     $this->getServer()->getPluginManager()->callEvent($event);
                 }
             } else {
