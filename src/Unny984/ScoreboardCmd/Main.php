@@ -100,7 +100,7 @@ class Main extends PluginBase implements Listener {
         $this->updateScoreHudTags();
     }
 
-    protected function updateScoreHudTags(): void {
+    public function updateScoreHudTags(): void {
         $minutes = floor($this->countdownTime / 60);
         $seconds = $this->countdownTime % 60;
         $value = $this->isCountdownActive ? sprintf("%02d:%02d", $minutes, $seconds) : "No timer";
