@@ -6,12 +6,13 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use pocketmine\scheduler\TaskHandler;
 use pocketmine\scheduler\ClosureTask;
-use ScoreHud\ScoreHud;
+use pocketmine\plugin\PluginManager;
 
 class Main extends PluginBase
 {
-    private ?ClosureTask $countdownTask = null;
+    private ?TaskHandler $countdownTask = null;
     private int $timeLeft = 0;
 
     public function onEnable(): void
@@ -21,9 +22,7 @@ class Main extends PluginBase
 
     public function onDisable(): void
     {
-        if ($this->countdownTask !== null) {
-            $this->getScheduler()->cancelTask($this->countdownTask->getHandler()->getId());
-        }
+        $this->stopCountdown();
         $this->getLogger()->info("ScoreboardCmd disabled!");
     }
 
@@ -62,18 +61,18 @@ class Main extends PluginBase
         $this->timeLeft = $seconds;
 
         if ($this->countdownTask !== null) {
-            $this->getScheduler()->cancelTask($this->countdownTask->getHandler()->getId());
+            $this->countdownTask->cancel();
         }
 
         $this->countdownTask = $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
             $this->updateCountdown();
-        }), 20); // Schedule task to run every second
+        }), 20);
     }
 
     private function stopCountdown(): void
     {
         if ($this->countdownTask !== null) {
-            $this->getScheduler()->cancelTask($this->countdownTask->getHandler()->getId());
+            $this->countdownTask->cancel();
             $this->countdownTask = null;
         }
 
@@ -96,9 +95,10 @@ class Main extends PluginBase
 
     private function updateScoreboardTitle(string $title): void
     {
-        $scoreHud = $this->getServer()->getPluginManager()->getPlugin("ScoreHud");
+        $pluginManager = $this->getServer()->getPluginManager();
+        $scoreHud = $pluginManager->getPlugin("ScoreHud");
 
-        if ($scoreHud instanceof ScoreHud) {
+        if ($scoreHud !== null && method_exists($scoreHud, "setCustomScore")) {
             foreach ($this->getServer()->getOnlinePlayers() as $player) {
                 $scoreHud->setCustomScore($player, $title);
             }
@@ -107,9 +107,10 @@ class Main extends PluginBase
 
     private function clearScoreboard(): void
     {
-        $scoreHud = $this->getServer()->getPluginManager()->getPlugin("ScoreHud");
+        $pluginManager = $this->getServer()->getPluginManager();
+        $scoreHud = $pluginManager->getPlugin("ScoreHud");
 
-        if ($scoreHud instanceof ScoreHud) {
+        if ($scoreHud !== null && method_exists($scoreHud, "resetCustomScore")) {
             foreach ($this->getServer()->getOnlinePlayers() as $player) {
                 $scoreHud->resetCustomScore($player);
             }
