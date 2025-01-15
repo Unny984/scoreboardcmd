@@ -4,7 +4,7 @@ namespace Unny984\ScoreboardCmd;
 
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
-use ScoreHud\event\PlayerTagUpdateEvent; // Ensure this is the correct namespace
+use Ifera\ScoreHud\event\PlayerTagUpdateEvent; // Ensure this is the correct namespace
 
 class ScoreHudListener implements Listener
 {

@@ -8,7 +8,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\scheduler\ClosureTask;
-use ScoreHud\event\PlayerTagUpdateEvent;
+use Ifera\ScoreHud\event\PlayerTagUpdateEvent;
 
 class Main extends PluginBase
 {
