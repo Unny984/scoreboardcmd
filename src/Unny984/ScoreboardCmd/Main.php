@@ -2,20 +2,18 @@
 
 namespace Unny984\ScoreboardCmd;
 
-use pocketmine\plugin\PluginBase;
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
-use pocketmine\scheduler\Task;
-use Ifera\ScoreHud\event\TagsResolveEvent;
+use pocketmine\plugin\PluginBase;
 
 class Main extends PluginBase {
     private array $timers = [];
 
     protected function onEnable(): void {
-        // Register ScoreHudListener
         $this->getServer()->getPluginManager()->registerEvents(new ScoreHudListener($this), $this);
 
-        // Schedule a task to update timers
-        $this->getScheduler()->scheduleRepeatingTask(new class($this) extends Task {
+        $this->getScheduler()->scheduleRepeatingTask(new class($this) extends \pocketmine\scheduler\Task {
             private Main $plugin;
 
             public function __construct(Main $plugin) {
@@ -30,10 +28,12 @@ class Main extends PluginBase {
 
     public function setTimer(Player $player, int $time): void {
         $this->timers[$player->getName()] = $time;
+        $player->sendMessage("Countdown started for {$time} seconds!");
     }
 
     public function clearTimer(Player $player): void {
         unset($this->timers[$player->getName()]);
+        $player->sendMessage("Your countdown has been stopped.");
     }
 
     public function getTimer(Player $player): ?int {
@@ -45,14 +45,45 @@ class Main extends PluginBase {
             if ($time > 0) {
                 $this->timers[$name]--;
 
-                // Notify ScoreHud to refresh
                 $player = $this->getServer()->getPlayerExact($name);
                 if ($player !== null && $player->isOnline()) {
-                    $event = new TagsResolveEvent($player, []);
+                    // Trigger ScoreHud update
+                    new TagsResolveEvent($player, []);
                 }
             } else {
                 unset($this->timers[$name]);
             }
+        }
+    }
+
+    public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
+        if (!$sender instanceof Player) {
+            $sender->sendMessage("This command can only be used in-game.");
+            return false;
+        }
+
+        switch ($command->getName()) {
+            case "countdown":
+                if (isset($args[0]) && is_numeric($args[0])) {
+                    $time = (int)$args[0];
+                    if ($time > 0) {
+                        $this->setTimer($sender, $time);
+                        return true;
+                    } else {
+                        $sender->sendMessage("Please provide a positive number for the countdown.");
+                        return false;
+                    }
+                } else {
+                    $sender->sendMessage("Usage: /countdown <time_in_seconds>");
+                    return false;
+                }
+
+            case "stopcountdown":
+                $this->clearTimer($sender);
+                return true;
+
+            default:
+                return false;
         }
     }
 }
