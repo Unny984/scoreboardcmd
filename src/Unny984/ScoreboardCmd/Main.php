@@ -48,16 +48,14 @@ class Main extends PluginBase {
     
                 $player = $this->getServer()->getPlayerExact($name);
                 if ($player !== null && $player->isOnline()) {
-                    // Format the timer value as MM:SS
+                    // Format the timer as MM:SS
                     $minutes = intdiv($this->timers[$name], 60);
                     $seconds = $this->timers[$name] % 60;
                     $formattedTime = sprintf("%02d:%02d", $minutes, $seconds);
     
-                    // Dynamically update the ScoreHud tag
-                    $event = new \Ifera\ScoreHud\event\TagsResolveEvent(
-                        $player,
-                        [new \Ifera\ScoreHud\scoreboard\ScoreTag("scorecountdown.timer", $formattedTime)]
-                    );
+                    // Set the timer tag dynamically using TagsResolveEvent
+                    $tag = new \Ifera\ScoreHud\scoreboard\ScoreTag("scorecountdown.timer", $formattedTime);
+                    $event = new \Ifera\ScoreHud\event\TagsResolveEvent($player, [$tag]);
                     $event->call();
                 }
             } else {
@@ -65,6 +63,7 @@ class Main extends PluginBase {
             }
         }
     }
+    
     
 
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
