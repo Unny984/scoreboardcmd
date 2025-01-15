@@ -94,6 +94,15 @@ class Main extends PluginBase
     private function updateCountdown(): void
     {
         if ($this->timeLeft <= 0) {
+            // Announce when the timer reaches 0
+            foreach ($this->getServer()->getOnlinePlayers() as $player) {
+                $this->getServer()->broadcastMessage("§6[Announcement] §aThe countdown has ended!");
+            }
+    
+            // Log the announcement to the console
+            $this->getLogger()->info("The countdown has ended!");
+    
+            // Stop the countdown
             $this->stopCountdown();
             return;
         }
@@ -110,6 +119,7 @@ class Main extends PluginBase
     
         $this->timeLeft--;
     }
+    
     
 
     public function getFormattedTime(): string
