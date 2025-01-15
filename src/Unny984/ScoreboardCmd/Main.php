@@ -94,15 +94,7 @@ class Main extends PluginBase
     private function updateCountdown(): void
     {
         if ($this->timeLeft <= 0) {
-            // Announce when the timer reaches 0
-            foreach ($this->getServer()->getOnlinePlayers() as $player) {
-                $this->getServer()->broadcastMessage("§6[Announcement] §aThe countdown has ended!");
-            }
-    
-            // Log the announcement to the console
-            $this->getLogger()->info("The countdown has ended!");
-    
-            // Stop the countdown
+            $this->getServer()->broadcastMessage("§6[Announcement] §aThe countdown has ended!");
             $this->stopCountdown();
             return;
         }
@@ -112,13 +104,24 @@ class Main extends PluginBase
     
         $this->formattedTime = sprintf("%02d:%02d", $minutes, $seconds);
     
-        // Send action bar message to all players
-        foreach ($this->getServer()->getOnlinePlayers() as $player) {
-            $player->sendActionBarMessage("剩余时间: {$this->formattedTime}");
-        }
+        // Update the scoreboard
+        $this->updateScoreboard("剩余时间: {$this->formattedTime}");
     
         $this->timeLeft--;
     }
+    
+    private function updateScoreboard(string $message): void
+    {
+        // Use ScoreHud to update the scoreboard placeholder
+        $scoreHud = $this->getServer()->getPluginManager()->getPlugin("ScoreHud");
+    
+        if ($scoreHud !== null) {
+            foreach ($this->getServer()->getOnlinePlayers() as $player) {
+                $scoreHud->setCustomScore($player, $message);
+            }
+        }
+    }
+    
     
     
 
