@@ -90,7 +90,7 @@ class Main extends PluginBase implements Listener {
         }, 20); // Run every second (20 ticks)
     }
 
-    private function stopCountdown(): void {
+    public function stopCountdown(): void {
         if ($this->countdownTask instanceof TaskHandler) {
             $this->countdownTask->cancel();
             $this->countdownTask = null;
@@ -100,7 +100,7 @@ class Main extends PluginBase implements Listener {
         $this->updateScoreHudTags();
     }
 
-    private function updateScoreHudTags(): void {
+    protected function updateScoreHudTags(): void {
         $minutes = floor($this->countdownTime / 60);
         $seconds = $this->countdownTime % 60;
         $value = $this->isCountdownActive ? sprintf("%02d:%02d", $minutes, $seconds) : "No timer";
