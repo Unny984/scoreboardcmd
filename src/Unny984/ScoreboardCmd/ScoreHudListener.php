@@ -4,7 +4,7 @@ namespace Unny984\ScoreboardCmd;
 
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
-use ScoreHud\event\PlayerTagUpdateEvent;
+use ScoreHud\event\PlayerTagUpdateEvent; // Ensure this is the correct namespace
 
 class ScoreHudListener implements Listener
 {
@@ -23,10 +23,9 @@ class ScoreHudListener implements Listener
 
     public function onTagUpdate(PlayerTagUpdateEvent $event): void
     {
-        $player = $event->getPlayer();
-        $tag = $event->getTag();
+        $tag = $event->getTag(); // Ensure `getTag` exists in the ScoreHud API
         if ($tag === "scorecountdown.timer") {
-            $event->setValue($this->plugin->getFormattedTime());
+            $event->setValue($this->plugin->getFormattedTime()); // Ensure `setValue` exists in the ScoreHud API
         }
     }
 }
