@@ -20,7 +20,7 @@ class Main extends PluginBase
     {
         $this->getLogger()->info("ScoreboardCmd enabled!");
         $this->getServer()->getPluginManager()->registerEvents(new ScoreHudListener($this), $this);
-    }
+    }    
 
 
 

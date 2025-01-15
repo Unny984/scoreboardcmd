@@ -24,12 +24,12 @@ class ScoreHudListener implements Listener
 
     public function onTagUpdate(PlayerTagUpdateEvent $event): void
     {
-        $tag = $event->getScoreTag();
+        $tag = $event->getTag(); // Retrieve the ScoreTag object
 
-        // Check if the tag is "scorecountdown.timer"
+        // Check if the tag's name matches "scorecountdown.timer"
         if ($tag->getName() === "scorecountdown.timer") {
-            $tag->setValue($this->plugin->getFormattedTime());
-            $event->setScoreTag($tag); // Ensure the tag is updated in the event
+            $tag->setValue($this->plugin->getFormattedTime()); // Update the tag's value
+            $event->setTag($tag); // Set the updated tag in the event
         }
     }
 }
