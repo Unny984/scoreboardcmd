@@ -24,5 +24,8 @@ permissions:
   scoreboardcmd.stopcountdown:
     description: Allows stopping the countdown.
     default: true
+  scoreboardcmd.debugscorehud:
+    description: Allows debugging the ScoreHud timer.
+    default: op
 depend:
   - ScoreHud
