@@ -8,16 +8,18 @@ use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
 use pocketmine\scheduler\TaskHandler;
 use pocketmine\scheduler\ClosureTask;
-use pocketmine\plugin\PluginManager;
+use ScoreHud\event\PlayerTagUpdateEvent;
 
 class Main extends PluginBase
 {
     private ?TaskHandler $countdownTask = null;
     private int $timeLeft = 0;
+    private string $formattedTime = "00:00";
 
     public function onEnable(): void
     {
         $this->getLogger()->info("ScoreboardCmd enabled!");
+        $this->getServer()->getPluginManager()->registerEvents(new ScoreHudListener($this), $this);
     }
 
     public function onDisable(): void
@@ -76,7 +78,8 @@ class Main extends PluginBase
             $this->countdownTask = null;
         }
 
-        $this->clearScoreboard();
+        $this->timeLeft = 0;
+        $this->formattedTime = "00:00";
     }
 
     private function updateCountdown(): void
@@ -89,31 +92,12 @@ class Main extends PluginBase
         $minutes = intdiv($this->timeLeft, 60);
         $seconds = $this->timeLeft % 60;
 
-        $this->updateScoreboardTitle(sprintf("%02d:%02d", $minutes, $seconds));
+        $this->formattedTime = sprintf("%02d:%02d", $minutes, $seconds);
         $this->timeLeft--;
     }
 
-    private function updateScoreboardTitle(string $title): void
+    public function getFormattedTime(): string
     {
-        $pluginManager = $this->getServer()->getPluginManager();
-        $scoreHud = $pluginManager->getPlugin("ScoreHud");
-
-        if ($scoreHud !== null && method_exists($scoreHud, "setCustomScore")) {
-            foreach ($this->getServer()->getOnlinePlayers() as $player) {
-                $scoreHud->setCustomScore($player, $title);
-            }
-        }
-    }
-
-    private function clearScoreboard(): void
-    {
-        $pluginManager = $this->getServer()->getPluginManager();
-        $scoreHud = $pluginManager->getPlugin("ScoreHud");
-
-        if ($scoreHud !== null && method_exists($scoreHud, "resetCustomScore")) {
-            foreach ($this->getServer()->getOnlinePlayers() as $player) {
-                $scoreHud->resetCustomScore($player);
-            }
-        }
+        return $this->formattedTime;
     }
 }
