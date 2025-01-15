@@ -45,17 +45,27 @@ class Main extends PluginBase {
         foreach ($this->timers as $name => $time) {
             if ($time > 0) {
                 $this->timers[$name]--;
-
+    
                 $player = $this->getServer()->getPlayerExact($name);
                 if ($player !== null && $player->isOnline()) {
-                    // Trigger ScoreHud update
-                    new TagsResolveEvent($player, []);
+                    // Create the ScoreTag with updated time
+                    $minutes = intdiv($this->timers[$name], 60);
+                    $seconds = $this->timers[$name] % 60;
+                    $tag = new \Ifera\ScoreHud\scoreboard\ScoreTag(
+                        "scorecountdown.timer",
+                        sprintf("%02d:%02d", $minutes, $seconds)
+                    );
+    
+                    // Fire the PlayerScoreTagEvent
+                    $event = new \Ifera\ScoreHud\event\PlayerScoreTagEvent($player, $tag);
+                    $event->call();
                 }
             } else {
                 unset($this->timers[$name]);
             }
         }
     }
+    
 
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
         if (!$sender instanceof Player) {
