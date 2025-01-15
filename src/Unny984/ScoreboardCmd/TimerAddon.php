@@ -56,9 +56,8 @@ class TimerAddon implements Listener {
                     $seconds = $time % 60;
                     $formattedTime = sprintf("%02d:%02d", $minutes, $seconds);
 
-                    // Create and dispatch TagsResolveEvent
-                    $event = new TagsResolveEvent($player, []);
-                    $event->setTag(new ScoreTag("scorecountdown.timer", $formattedTime));
+                    // Dispatch TagsResolveEvent to update the tag dynamically
+                    $event = new TagsResolveEvent($player, [new ScoreTag("scorecountdown.timer", $formattedTime)]);
                     $event->call();
                 }
             } else {
