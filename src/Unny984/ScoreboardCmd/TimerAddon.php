@@ -49,19 +49,18 @@ class TimerAddon implements Listener {
         foreach ($this->timers as $name => $time) {
             if ($time > 0) {
                 $this->timers[$name]--;
-
+    
                 $player = $this->plugin->getServer()->getPlayerExact($name);
                 if ($player !== null) {
-                    $this->plugin->getServer()->getPluginManager()->callEvent(
-                        new TagsResolveEvent($player)
-                    );
+                    $event = new TagsResolveEvent($player, []);
+                    $event->call();
                 }
             } else {
                 unset($this->timers[$name]);
             }
         }
     }
-
+    
     public function onTagsResolve(TagsResolveEvent $event): void {
         $player = $event->getPlayer();
         $name = $player->getName();
