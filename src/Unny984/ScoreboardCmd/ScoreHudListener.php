@@ -4,7 +4,8 @@ namespace Unny984\ScoreboardCmd;
 
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerJoinEvent;
-use Ifera\ScoreHud\event\PlayerTagUpdateEvent; // Ensure this is the correct namespace
+use Ifera\ScoreHud\event\PlayerTagUpdateEvent;
+use Ifera\ScoreHud\scoreboard\ScoreTag;
 
 class ScoreHudListener implements Listener
 {
@@ -23,9 +24,12 @@ class ScoreHudListener implements Listener
 
     public function onTagUpdate(PlayerTagUpdateEvent $event): void
     {
-        $tag = $event->getTag(); // Ensure `getTag` exists in the ScoreHud API
-        if ($tag === "scorecountdown.timer") {
-            $event->setValue($this->plugin->getFormattedTime()); // Ensure `setValue` exists in the ScoreHud API
+        $tag = $event->getScoreTag();
+
+        // Check if the tag is "scorecountdown.timer"
+        if ($tag->getName() === "scorecountdown.timer") {
+            $tag->setValue($this->plugin->getFormattedTime());
+            $event->setScoreTag($tag); // Ensure the tag is updated in the event
         }
     }
 }

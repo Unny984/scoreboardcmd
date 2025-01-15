@@ -19,15 +19,9 @@ class Main extends PluginBase
     public function onEnable(): void
     {
         $this->getLogger()->info("ScoreboardCmd enabled!");
-
-        // Register a custom placeholder for ScoreHud
-        $scoreHud = $this->getServer()->getPluginManager()->getPlugin("ScoreHud");
-        if ($scoreHud !== null) {
-            $scoreHud->registerPlaceholder("scorecountdown.timer", function (Player $player) {
-                return $this->getFormattedTime();
-            });
-        }
+        $this->getServer()->getPluginManager()->registerEvents(new ScoreHudListener($this), $this);
     }
+
 
 
     public function onDisable(): void
