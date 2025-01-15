@@ -13,6 +13,10 @@ commands:
     description: Stop the countdown and remove the scoreboard.
     usage: /stopcountdown
     permission: scoreboardcmd.stopcountdown
+  debugscorehud:
+    description: Debug ScoreHud timer.
+    usage: /debugscorehud
+    permission: scoreboardcmd.debugscorehud
 permissions:
   scoreboardcmd.countdown:
     description: Allows starting a countdown.

@@ -26,16 +26,17 @@ class ScoreHudListener implements Listener
     {
         $tag = $event->getTag(); // Retrieve the ScoreTag object
     
-        // Check if the tag's name matches "scorecountdown.timer"
+        // Debugging: Log the tag name and current value
+        $this->plugin->getLogger()->info("DEBUG: Updating tag '{$tag->getName()}'");
+    
         if ($tag->getName() === "scorecountdown.timer") {
             $value = $this->plugin->getFormattedTime();
+    
+            // Debugging: Log the value being set
+            $this->plugin->getLogger()->info("DEBUG: Setting tag value to '$value'");
+    
             $tag->setValue($value); // Update the tag's value
-            $event->setTag($tag); // Set the updated tag in the event
-    
-            // Send debug messages
-            $event->getPlayer()->sendMessage("DEBUG: Scoreboard timer updated to $value");
-            $event->getPlayer()->sendActionBarMessage("剩余时间: $value");
+            $event->setTag($tag); // Update the event with the new tag
         }
-    }
-    
+    }    
 }

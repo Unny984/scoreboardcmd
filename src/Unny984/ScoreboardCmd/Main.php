@@ -53,10 +53,13 @@ class Main extends PluginBase
                 $sender->sendMessage("Countdown stopped and scoreboard cleared.");
                 break;
 
+            case "debugscorehud":
+                $sender->sendMessage("DEBUG: Timer is '{$this->getFormattedTime()}'");
+                return true;
+
             default:
                 return false;
         }
-
         return true;
     }
 
