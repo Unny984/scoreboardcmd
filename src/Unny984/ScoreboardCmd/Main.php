@@ -48,25 +48,21 @@ class Main extends PluginBase {
     
                 $player = $this->getServer()->getPlayerExact($name);
                 if ($player !== null && $player->isOnline()) {
-                    // Create the ScoreTag with updated time
+                    // Trigger ScoreHud update with the updated timer
                     $minutes = intdiv($this->timers[$name], 60);
                     $seconds = $this->timers[$name] % 60;
-                    $tag = new \Ifera\ScoreHud\scoreboard\ScoreTag(
-                        "scorecountdown.timer",
-                        sprintf("%02d:%02d", $minutes, $seconds)
-                    );
+                    $tagValue = sprintf("%02d:%02d", $minutes, $seconds);
     
-                    // Fire the PlayerScoreTagEvent
-                    $event = new \Ifera\ScoreHud\event\PlayerScoreTagEvent($player, $tag);
-                    $event->call();
+                    // Use the TagsResolveEvent to dynamically set the tag
+                    $event = new \Ifera\ScoreHud\event\TagsResolveEvent($player);
+                    $event->setTag(new \Ifera\ScoreHud\scoreboard\ScoreTag("scorecountdown.timer", $tagValue));
                 }
             } else {
                 unset($this->timers[$name]);
             }
         }
-    }
+    }    
     
-
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
         if (!$sender instanceof Player) {
             $sender->sendMessage("This command can only be used in-game.");
