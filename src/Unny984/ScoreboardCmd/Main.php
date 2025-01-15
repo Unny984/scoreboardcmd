@@ -53,18 +53,18 @@ class Main extends PluginBase {
                     $seconds = $this->timers[$name] % 60;
                     $formattedTime = sprintf("%02d:%02d", $minutes, $seconds);
     
-                    // Create the ScoreTag and use PlayerScoreTagEvent
-                    $tag = new \Ifera\ScoreHud\scoreboard\ScoreTag("scorecountdown.timer", $formattedTime);
-    
-                    // Correctly invoke the PlayerScoreTagEvent
-                    $event = new \Ifera\ScoreHud\event\PlayerScoreTagEvent($player, $tag);
-                    $event->call();
+                    // Use the ScoreHud API to dynamically set the tag
+                    $event = new \Ifera\ScoreHud\event\TagsResolveEvent($player, [
+                        new \Ifera\ScoreHud\scoreboard\ScoreTag("scorecountdown.timer", $formattedTime)
+                    ]);
+                    $this->getServer()->getPluginManager()->callEvent($event);
                 }
             } else {
                 unset($this->timers[$name]);
             }
         }
     }
+    
     
     
     
