@@ -62,27 +62,31 @@ class Main extends PluginBase
 
     private function startCountdown(int $seconds): void
     {
+        $this->getLogger()->info("Starting countdown for $seconds seconds...");
         $this->timeLeft = $seconds;
-
+    
         if ($this->countdownTask !== null) {
             $this->countdownTask->cancel();
         }
-
+    
         $this->countdownTask = $this->getScheduler()->scheduleRepeatingTask(new ClosureTask(function (): void {
             $this->updateCountdown();
         }), 20);
     }
+    
 
     private function stopCountdown(): void
     {
+        $this->getLogger()->info("Countdown stopped.");
         if ($this->countdownTask !== null) {
             $this->countdownTask->cancel();
             $this->countdownTask = null;
         }
-
+    
         $this->timeLeft = 0;
         $this->formattedTime = "00:00";
     }
+    
 
     private function updateCountdown(): void
     {
@@ -90,13 +94,20 @@ class Main extends PluginBase
             $this->stopCountdown();
             return;
         }
-
+    
         $minutes = intdiv($this->timeLeft, 60);
         $seconds = $this->timeLeft % 60;
-
+    
         $this->formattedTime = sprintf("%02d:%02d", $minutes, $seconds);
+    
+        // Send action bar message to all players
+        foreach ($this->getServer()->getOnlinePlayers() as $player) {
+            $player->sendActionBarMessage("剩余时间: {$this->formattedTime}");
+        }
+    
         $this->timeLeft--;
     }
+    
 
     public function getFormattedTime(): string
     {
