@@ -1,65 +1,119 @@
 <?php
-
 namespace Unny984\ScoreboardCmd;
 
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\player\Player;
+use pocketmine\scheduler\Task;
+use ScoreHud\ScoreHud;
 
 class Main extends PluginBase {
 
-    private ?TimerAddon $timerAddon = null;
+    private ?Task $countdownTask = null;
+    private int $timeLeft = 0;
 
     public function onEnable(): void {
-        $this->timerAddon = new TimerAddon($this);
-        $this->getLogger()->info("ScoreboardCmd has been enabled!");
+        $this->getLogger()->info("ScoreboardCmd enabled!");
+    }
+
+    public function onDisable(): void {
+        if ($this->countdownTask !== null) {
+            $this->getScheduler()->cancelTask($this->countdownTask->getTaskId());
+        }
+        $this->getLogger()->info("ScoreboardCmd disabled!");
     }
 
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool {
         if (!$sender instanceof Player) {
             $sender->sendMessage("This command can only be used in-game.");
-            return true;
+            return false;
         }
 
         switch ($command->getName()) {
             case "countdown":
-                // Ensure there is exactly one argument and it is numeric
-                if (count($args) !== 1 || !ctype_digit($args[0])) {
+                if (count($args) !== 1 || !is_numeric($args[0])) {
                     $sender->sendMessage("Usage: /countdown <time_in_seconds>");
                     return false;
                 }
 
-                $time = (int)$args[0];
-                if ($time <= 0) {
-                    $sender->sendMessage("Please specify a positive number of seconds.");
-                    return false;
-                }
-
-                $this->startCountdown($sender, $time);
-                $sender->sendMessage("Countdown started for {$time} seconds.");
-                return true;
+                $this->startCountdown((int)$args[0]);
+                $sender->sendMessage("Countdown started for {$args[0]} seconds!");
+                break;
 
             case "stopcountdown":
-                $this->stopCountdown($sender);
-                $sender->sendMessage("Countdown stopped.");
-                return true;
+                $this->stopCountdown();
+                $sender->sendMessage("Countdown stopped and scoreboard cleared.");
+                break;
+
+            default:
+                return false;
         }
 
-        return false;
+        return true;
     }
 
-    public function startCountdown(Player $player, int $time): void {
-        if ($this->timerAddon !== null) {
-            $this->getLogger()->info("Setting timer for player: {$player->getName()} with time: {$time}");
-            $this->timerAddon->setTimer(100);
+    private function startCountdown(int $seconds): void {
+        $this->timeLeft = $seconds;
+
+        if ($this->countdownTask !== null) {
+            $this->getScheduler()->cancelTask($this->countdownTask->getTaskId());
+        }
+
+        $this->countdownTask = new class($this) extends Task {
+            private Main $plugin;
+
+            public function __construct(Main $plugin) {
+                $this->plugin = $plugin;
+            }
+
+            public function onRun(): void {
+                $this->plugin->updateCountdown();
+            }
+        };
+
+        $this->getScheduler()->scheduleRepeatingTask($this->countdownTask, 20); // Schedule task to run every second
+    }
+
+    private function stopCountdown(): void {
+        if ($this->countdownTask !== null) {
+            $this->getScheduler()->cancelTask($this->countdownTask->getTaskId());
+            $this->countdownTask = null;
+        }
+
+        $this->clearScoreboard();
+    }
+
+    private function updateCountdown(): void {
+        if ($this->timeLeft <= 0) {
+            $this->stopCountdown();
+            return;
+        }
+
+        $minutes = intdiv($this->timeLeft, 60);
+        $seconds = $this->timeLeft % 60;
+
+        $this->updateScoreboardTitle(sprintf("%02d:%02d", $minutes, $seconds));
+        $this->timeLeft--;
+    }
+
+    private function updateScoreboardTitle(string $title): void {
+        $scoreHud = $this->getServer()->getPluginManager()->getPlugin("ScoreHud");
+
+        if ($scoreHud instanceof ScoreHud) {
+            foreach ($this->getServer()->getOnlinePlayers() as $player) {
+                $scoreHud->setCustomScore($player, $title);
+            }
         }
     }
-    
 
-    public function stopCountdown(Player $player): void {
-        if ($this->timerAddon !== null) {
-            $this->timerAddon->clearTimer();
+    private function clearScoreboard(): void {
+        $scoreHud = $this->getServer()->getPluginManager()->getPlugin("ScoreHud");
+
+        if ($scoreHud instanceof ScoreHud) {
+            foreach ($this->getServer()->getOnlinePlayers() as $player) {
+                $scoreHud->resetCustomScore($player);
+            }
         }
     }
 }
